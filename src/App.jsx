@@ -1,26 +1,12 @@
-import { useState } from "react";
-import ComponentApp from "./componentApp";
+import './App.css'
 
-function App() {
-  const [categories, setCategories] = useState([]);
-
-  const addCategory = (newCategory) => {
-    if (newCategory.trim() === "") return; 
-    setCategories([...categories, newCategory]);
-  };
-
-  return (
-    <div className="p-4">
-      <h1>Challenge 04</h1>
-      <ComponentApp onAddCategory={addCategory} />
-
-      <ul>
-        {categories.map((cat, index) => (
-          <li key={index}>{cat}</li>
-        ))}
-      </ul>
-    </div>
-  );
+const App = () => {
+  return(
+    <>
+      <h1> HOLA Mundo!! </h1>
+      <h1> Bienvenido </h1>
+    </>
+  )
 }
 
-export default App;
+export default App
