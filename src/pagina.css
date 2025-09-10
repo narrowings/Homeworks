@@ -47,10 +47,10 @@ h3{
 
 .card img {
   display: block;
-  width: 200px;   /* 👈 ancho fijo */
-  height: 300px;  /* 👈 alto fijo */
-  object-fit: cover;  /* mantiene proporciones */
-  border: none;   /* 👈 sin borde en la imagen */
+  width: 200px;   
+  height: 300px;  
+  object-fit: cover; 
+  border: none;   
   border-radius: 4px;
-  margin: 0 auto; /* centrar imagen dentro de la card */
+  margin: 0 auto; 
 }
