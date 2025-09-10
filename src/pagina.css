@@ -1,0 +1,56 @@
+body{
+    background-color: white;
+}
+
+input {
+    background-color: #ccc;
+    color: black;
+}
+
+input::placeholder {
+  color: black; 
+  opacity: 1; 
+}
+
+button{
+    background-color: blue;
+}
+
+h3{
+    color: black;
+}
+
+:placeholder-shown{
+    color: black;
+}
+
+/* Contenedor de la galería */
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.card {
+  border: none;
+  padding: 10px;
+  border-radius: 20px;
+  background-color: white;
+  width: 220px;
+  text-align: center;
+}
+
+.card h3 {
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.card img {
+  display: block;
+  width: 200px;   /* 👈 ancho fijo */
+  height: 300px;  /* 👈 alto fijo */
+  object-fit: cover;  /* mantiene proporciones */
+  border: none;   /* 👈 sin borde en la imagen */
+  border-radius: 4px;
+  margin: 0 auto; /* centrar imagen dentro de la card */
+}
