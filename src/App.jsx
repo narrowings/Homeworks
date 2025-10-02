@@ -1,33 +1,93 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { useDispatch, useSelector } from 'react-redux'
+import { increment, decrement, incrementByValue } from './counterSlice'
+import { unshift, shift, clear } from './stackSlice'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const dispatch = useDispatch()
+
+  
+  const count = useSelector((state) => state.counter.count)
+  const [inputValue, setInputValue] = useState(0)
+
+  const handleIncrement = () => {
+    dispatch(increment())
+  }
+
+  const handleDecrement = () => {
+    dispatch(decrement())
+  }
+
+  const handleIncrementByValue = () => {
+    dispatch(incrementByValue(inputValue))
+     
+  }
+
+
+  const stack = useSelector((state) => state.stack.items)
+  const [stackValue, setStackValue] = useState("")
+
+  const handleInsert = () => {
+    if (stackValue.trim() !== "") {
+      dispatch(unshift(stackValue))
+      setStackValue("")
+    }
+  }
+
+  const handleDelete = () => {
+    dispatch(shift())
+  }
+
+  const handleClear = () => {
+    dispatch(clear())
+  }
 
   return (
     <>
+      
+      <h2>Counter</h2>
+      <p> Counter is: {count} </p>
+
+      <button onClick={handleIncrement}>Increment</button>
+      <button onClick={handleDecrement}>Decrement</button>
+
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+        <input
+          type="number"
+          value={inputValue}
+          onChange={(e) => setInputValue(Number(e.target.value))}
+        />
+        <button onClick={handleIncrementByValue}>
+          Incrementar por valor
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+
+      <hr />
+
+     
+      <h2>Stack</h2>
+      <input
+        type="text"
+        value={stackValue}
+        onChange={(e) => setStackValue(e.target.value)}
+      />
+      <button onClick={handleInsert}>Insert</button>
+      <button onClick={handleDelete}>Delete</button>
+      <button onClick={handleClear}>Clear</button>
+
+      <h3>Pila actual:</h3>
+      {stack.length === 0 ? (
+        <p>(vacía)</p>
+      ) : (
+        <ul>
+          {stack.map((item, index) => (
+            <li key={index}>
+              {item} {index === stack.length - 1 }
+            </li>
+          ))}
+        </ul>
+      )}
     </>
   )
 }
