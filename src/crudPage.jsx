@@ -1,12 +1,12 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // 👈 IMPORTANTE
 import { fetchItems, addNewItem, deleteItem, updateItemInFirestore } from "./crudThunks";
-//import { logoutFirebase } from "../store/authThunks"; // Asegúrate de tener este thunk o te lo genero
-//import { logout } from "../store/authSlice";
 import { startLogout } from "./thunks";
 
 const CrudPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // 👈 Para navegar a otra ruta
   const { items } = useSelector((state) => state.crud);
 
   const [formData, setFormData] = useState({ titulo: "", descripcion: "" });
@@ -16,7 +16,6 @@ const CrudPage = () => {
     dispatch(fetchItems());
   }, []);
 
-  // ✅ Crear o Actualizar
   const handleSubmit = (e) => {
     e.preventDefault();
     if (editingId) {
@@ -28,27 +27,29 @@ const CrudPage = () => {
     setFormData({ titulo: "", descripcion: "" });
   };
 
-  // ✅ Eliminar
   const handleDelete = (id) => {
     dispatch(deleteItem(id));
   };
 
-  // ✅ Editar (carga datos al formulario)
   const handleEdit = (item) => {
     setEditingId(item.id);
     setFormData({ titulo: item.titulo, descripcion: item.descripcion });
   };
 
-  // ✅ Logout
-    const handleLogout = () => {
+  const handleLogout = () => {
     dispatch(startLogout());
   };
 
+  // 👇 Redirección al chat
+  const goToChat = () => {
+    navigate("/chat");
+  };
 
   return (
     <div>
       <h1>Panel CRUD (Firestore)</h1>
       <button onClick={handleLogout}>Cerrar sesión</button>
+      <button onClick={goToChat} style={{ marginLeft: "10px" }}>💬 Ir al Chat</button> {/* 👈 Nuevo botón */}
 
       <form onSubmit={handleSubmit}>
         <input
