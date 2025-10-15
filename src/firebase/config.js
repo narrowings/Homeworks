@@ -11,7 +11,7 @@ import { getFirestore } from "firebase/firestore";
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAuiCnSrfN0bAnhofElf6mcMxXGvQqtjPc",
+  apiKey: import.meta.env.VITE_API_KEY,
   authDomain: "estructuras2-e14f3.firebaseapp.com",
   projectId: "estructuras2-e14f3",
   storageBucket: "estructuras2-e14f3.firebasestorage.app",

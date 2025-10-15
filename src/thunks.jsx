@@ -23,17 +23,20 @@ export const startLogout = () => {
 
 export const registerAuth = (email, password) => {
     return async (dispatch) => {
-        const response = await createUserWithEmailAndPassword(auth, email, password)
+        const response = await createUserWithEmailAndPassword(auth, email, password);
+
         if (response) {
             await updateProfile(auth.currentUser, {
                 displayName: 'Rafa',
                 photoURL: ''
-            })
+            });
 
-            const {email} = response.user
-            dispatch(register({email}))
-        }else{
-            throw new Error('login failed')
+            const { uid, email, displayName, photoURL } = auth.currentUser;
+
+            // ✅ EN VEZ DE register(...) usamos login(...)
+            dispatch(login({ uid, email, displayName, photoURL }));
+        } else {
+            throw new Error('login failed');
         }
     }
-}
+};

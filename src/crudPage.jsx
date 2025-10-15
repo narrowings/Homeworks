@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { fetchItems, addNewItem, deleteItem, updateItemInFirestore } from "../store/crudThunks";
+import { fetchItems, addNewItem, deleteItem, updateItemInFirestore } from "./crudThunks";
 //import { logoutFirebase } from "../store/authThunks"; // Asegúrate de tener este thunk o te lo genero
 //import { logout } from "../store/authSlice";
 import { startLogout } from "./thunks";

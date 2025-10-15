@@ -1,8 +1,8 @@
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
-import { db } from "../firebase/config";
+import { db } from "../src/firebase/config";
 import { setItems, addItem, deleteItemLocal, updateItem } from "./crudSlice";
 
-const COLLECTION_NAME = "posts"; // Puedes cambiar el nombre de la colección si quieres
+const COLLECTION_NAME = "Estructuras2"; // Puedes cambiar el nombre de la colección si quieres
 
 // 📌 1. Leer documentos de Firestore
 export const fetchItems = () => {
