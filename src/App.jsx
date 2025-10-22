@@ -1,95 +1,141 @@
-import { useState } from 'react'
-import './App.css'
-import { useDispatch, useSelector } from 'react-redux'
-import { increment, decrement, incrementByValue } from './counterSlice'
-import { unshift, shift, clear } from './stackSlice'
+import React, { useState, useEffect } from "react";
+import Tree from "react-d3-tree";
 
-function App() {
-  const dispatch = useDispatch()
+// Clase del nodo
+class Node {
+  constructor(value) {
+    this.value = value;
+    this.left = null;
+    this.right = null;
+  }
+}
 
-  
-  const count = useSelector((state) => state.counter.count)
-  const [inputValue, setInputValue] = useState(0)
-
-  const handleIncrement = () => {
-    dispatch(increment())
+// Clase del árbol binario
+class BinaryTree {
+  constructor() {
+    this.root = null;
   }
 
-  const handleDecrement = () => {
-    dispatch(decrement())
-  }
+  insert(value) {
+    const newNode = new Node(value);
+    if (!this.root) {
+      this.root = newNode;
+      return;
+    }
 
-  const handleIncrementByValue = () => {
-    dispatch(incrementByValue(inputValue))
-     
-  }
-
-
-  const stack = useSelector((state) => state.stack.items)
-  const [stackValue, setStackValue] = useState("")
-
-  const handleInsert = () => {
-    if (stackValue.trim() !== "") {
-      dispatch(unshift(stackValue))
-      setStackValue("")
+    let current = this.root;
+    while (true) {
+      if (value < current.value) {
+        if (!current.left) {
+          current.left = newNode;
+          break;
+        }
+        current = current.left;
+      } else {
+        if (!current.right) {
+          current.right = newNode;
+          break;
+        }
+        current = current.right;
+      }
     }
   }
 
-  const handleDelete = () => {
-    dispatch(shift())
+  inorder(node = this.root, result = []) {
+    if (!node) return result;
+    this.inorder(node.left, result);
+    result.push(node.value);
+    this.inorder(node.right, result);
+    return result;
   }
 
-  const handleClear = () => {
-    dispatch(clear())
+  preorder(node = this.root, result = []) {
+    if (!node) return result;
+    result.push(node.value);
+    this.preorder(node.left, result);
+    this.preorder(node.right, result);
+    return result;
   }
 
-  return (
-    <>
-      
-      <h2>Counter</h2>
-      <p> Counter is: {count} </p>
+  postorder(node = this.root, result = []) {
+    if (!node) return result;
+    this.postorder(node.left, result);
+    this.postorder(node.right, result);
+    result.push(node.value);
+    return result;
+  }
 
-      <button onClick={handleIncrement}>Increment</button>
-      <button onClick={handleDecrement}>Decrement</button>
+  find(value, node = this.root) {
+    if (!node) return false;
+    if (node.value === value) return true;
+    return value < node.value
+      ? this.find(value, node.left)
+      : this.find(value, node.right);
+  }
 
-      <div>
-        <input
-          type="number"
-          value={inputValue}
-          onChange={(e) => setInputValue(Number(e.target.value))}
-        />
-        <button onClick={handleIncrementByValue}>
-          Incrementar por valor
-        </button>
-      </div>
-
-      <hr />
-
-     
-      <h2>Stack</h2>
-      <input
-        type="text"
-        value={stackValue}
-        onChange={(e) => setStackValue(e.target.value)}
-      />
-      <button onClick={handleInsert}>Insert</button>
-      <button onClick={handleDelete}>Delete</button>
-      <button onClick={handleClear}>Clear</button>
-
-      <h3>Pila actual:</h3>
-      {stack.length === 0 ? (
-        <p>(vacía)</p>
-      ) : (
-        <ul>
-          {stack.map((item, index) => (
-            <li key={index}>
-              {item} {index === stack.length - 1 }
-            </li>
-          ))}
-        </ul>
-      )}
-    </>
-  )
+  // Convertir a formato de react-d3-tree
+  toD3Format(node = this.root) {
+    if (!node) return null;
+    return {
+      name: String(node.value),
+      children: [this.toD3Format(node.left), this.toD3Format(node.right)].filter(Boolean),
+    };
+  }
 }
 
-export default App
+function App() {
+  const [tree] = useState(new BinaryTree());
+  const [treeData, setTreeData] = useState(null);
+  const [searchValue, setSearchValue] = useState("");
+  const [found, setFound] = useState(null);
+
+  useEffect(() => {
+    // Insertar algunos valores iniciales
+    const numbers = [8, 3, 10, 1, 6, 14, 4, 7, 13];
+    numbers.forEach((num) => tree.insert(num));
+    setTreeData(tree.toD3Format());
+
+    console.log("🔹 Inorder:", tree.inorder());
+    console.log("🔹 Preorder:", tree.preorder());
+    console.log("🔹 Postorder:", tree.postorder());
+  }, [tree]);
+
+  const handleSearch = () => {
+    const exists = tree.find(parseInt(searchValue));
+    setFound(exists);
+  };
+
+  return (
+    <div style={{ width: "100vw", height: "100vh", textAlign: "center" }}>
+      <h1 style={{ marginTop: "10px" }}>🌳 Binary Tree Visualizer</h1>
+
+      <div style={{ margin: "20px" }}>
+        <input
+          type="number"
+          placeholder="Buscar valor..."
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          style={{ padding: "5px", marginRight: "10px" }}
+        />
+        <button onClick={handleSearch}>Buscar</button>
+        {found !== null && (
+          <p style={{ marginTop: "10px" }}>
+            {found ? "✅ Valor encontrado en el árbol" : "❌ Valor no está en el árbol"}
+          </p>
+        )}
+      </div>
+
+      {treeData && (
+        <div style={{ width: "100%", height: "80vh" }}>
+          <Tree
+            data={treeData}
+            orientation="vertical"
+            translate={{ x: 400, y: 100 }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
