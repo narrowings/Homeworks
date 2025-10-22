@@ -1,141 +1,116 @@
-import React, { useState, useEffect } from "react";
-import Tree from "react-d3-tree";
+import React, { useState } from "react";
 
-// Clase del nodo
-class Node {
-  constructor(value) {
-    this.value = value;
-    this.left = null;
-    this.right = null;
+// Clase de nodo N-ario
+class MenuNode {
+  constructor(title, link, component) {
+    this.title = title;
+    this.link = link;
+    this.component = component;
+    this.children = [];
+  }
+
+  addChild(node) {
+    this.children.push(node);
   }
 }
 
-// Clase del árbol binario
-class BinaryTree {
-  constructor() {
-    this.root = null;
-  }
-
-  insert(value) {
-    const newNode = new Node(value);
-    if (!this.root) {
-      this.root = newNode;
-      return;
-    }
-
-    let current = this.root;
-    while (true) {
-      if (value < current.value) {
-        if (!current.left) {
-          current.left = newNode;
-          break;
-        }
-        current = current.left;
-      } else {
-        if (!current.right) {
-          current.right = newNode;
-          break;
-        }
-        current = current.right;
-      }
-    }
-  }
-
-  inorder(node = this.root, result = []) {
-    if (!node) return result;
-    this.inorder(node.left, result);
-    result.push(node.value);
-    this.inorder(node.right, result);
-    return result;
-  }
-
-  preorder(node = this.root, result = []) {
-    if (!node) return result;
-    result.push(node.value);
-    this.preorder(node.left, result);
-    this.preorder(node.right, result);
-    return result;
-  }
-
-  postorder(node = this.root, result = []) {
-    if (!node) return result;
-    this.postorder(node.left, result);
-    this.postorder(node.right, result);
-    result.push(node.value);
-    return result;
-  }
-
-  find(value, node = this.root) {
-    if (!node) return false;
-    if (node.value === value) return true;
-    return value < node.value
-      ? this.find(value, node.left)
-      : this.find(value, node.right);
-  }
-
-  // Convertir a formato de react-d3-tree
-  toD3Format(node = this.root) {
-    if (!node) return null;
-    return {
-      name: String(node.value),
-      children: [this.toD3Format(node.left), this.toD3Format(node.right)].filter(Boolean),
-    };
-  }
-}
-
-function App() {
-  const [tree] = useState(new BinaryTree());
-  const [treeData, setTreeData] = useState(null);
-  const [searchValue, setSearchValue] = useState("");
-  const [found, setFound] = useState(null);
-
-  useEffect(() => {
-    // Insertar algunos valores iniciales
-    const numbers = [8, 3, 10, 1, 6, 14, 4, 7, 13];
-    numbers.forEach((num) => tree.insert(num));
-    setTreeData(tree.toD3Format());
-
-    console.log("🔹 Inorder:", tree.inorder());
-    console.log("🔹 Preorder:", tree.preorder());
-    console.log("🔹 Postorder:", tree.postorder());
-  }, [tree]);
-
-  const handleSearch = () => {
-    const exists = tree.find(parseInt(searchValue));
-    setFound(exists);
-  };
+// Función recursiva para renderizar el menú
+function RenderMenu({ node, onSelect, level = 0 }) {
+  const [open, setOpen] = useState(false);
 
   return (
-    <div style={{ width: "100vw", height: "100vh", textAlign: "center" }}>
-      <h1 style={{ marginTop: "10px" }}>🌳 Binary Tree Visualizer</h1>
-
-      <div style={{ margin: "20px" }}>
-        <input
-          type="number"
-          placeholder="Buscar valor..."
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          style={{ padding: "5px", marginRight: "10px" }}
-        />
-        <button onClick={handleSearch}>Buscar</button>
-        {found !== null && (
-          <p style={{ marginTop: "10px" }}>
-            {found ? "✅ Valor encontrado en el árbol" : "❌ Valor no está en el árbol"}
-          </p>
-        )}
+    <div style={{ marginLeft: level * 10 }}>
+      <div
+        onClick={() => {
+          if (node.children.length > 0) setOpen(!open);
+          onSelect(node);
+        }}
+        style={{
+          cursor: "pointer",
+          padding: "6px 12px",
+          backgroundColor: "#1e1e1e",
+          color: "#fff",
+          borderBottom: "1px solid #333",
+        }}
+      >
+        {node.title}
       </div>
-
-      {treeData && (
-        <div style={{ width: "100%", height: "80vh" }}>
-          <Tree
-            data={treeData}
-            orientation="vertical"
-            translate={{ x: 400, y: 100 }}
+      {open &&
+        node.children.map((child, i) => (
+          <RenderMenu
+            key={i}
+            node={child}
+            level={level + 1}
+            onSelect={onSelect}
           />
-        </div>
-      )}
+        ))}
     </div>
   );
 }
 
-export default App;
+export default function App() {
+  // Construcción del árbol N-ario
+  const root = new MenuNode("Main Menu", "/", "Welcome to the app!");
+
+  const messages = new MenuNode("Messages", "/messages", "📩 Messages section");
+  const settings = new MenuNode("Settings", "/settings", "⚙️ Settings section");
+  const help = new MenuNode("Help", "/help", "💡 Help and documentation");
+
+  const account = new MenuNode("Account", "/settings/account", "👤 Account details");
+  const privacy = new MenuNode("Security & Privacy", "/settings/privacy", "🔒 Privacy settings");
+  const notification = new MenuNode("Notification", "/settings/notification", "🔔 Notification settings");
+
+  settings.addChild(account);
+  settings.addChild(privacy);
+  settings.addChild(notification);
+
+  const faq = new MenuNode("FAQ", "/help/faq", "❓ Frequently Asked Questions");
+  const contact = new MenuNode("Contact Support", "/help/contact", "📞 Contact support");
+  help.addChild(faq);
+  help.addChild(contact);
+
+  root.addChild(messages);
+  root.addChild(settings);
+  root.addChild(help);
+
+  const [selectedNode, setSelectedNode] = useState(root);
+
+  return (
+    <div style={{ display: "flex", height: "100vh", backgroundColor: "#121212" }}>
+      {/* Sidebar */}
+      <div
+        style={{
+          width: "250px",
+          backgroundColor: "#1e1e1e",
+          color: "white",
+          overflowY: "auto",
+        }}
+      >
+        {root.children.map((child, i) => (
+          <RenderMenu key={i} node={child} onSelect={setSelectedNode} />
+        ))}
+      </div>
+
+      {/* Contenido */}
+      <div
+        style={{
+          flex: 1,
+          color: "white",
+          padding: "40px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "1.5rem",
+        }}
+      >
+        <div>
+          <h2>{selectedNode.title}</h2>
+          <p style={{ marginTop: "10px" }}>{selectedNode.component}</p>
+          <p style={{ marginTop: "10px", fontSize: "0.9rem", color: "#aaa" }}>
+            Link: {selectedNode.link}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
