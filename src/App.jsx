@@ -1,115 +1,100 @@
-import React, { useState } from "react";
-
-// Clase de nodo N-ario
-class MenuNode {
-  constructor(title, link, component) {
-    this.title = title;
-    this.link = link;
-    this.component = component;
-    this.children = [];
-  }
-
-  addChild(node) {
-    this.children.push(node);
-  }
-}
-
-// Función recursiva para renderizar el menú
-function RenderMenu({ node, onSelect, level = 0 }) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div style={{ marginLeft: level * 10 }}>
-      <div
-        onClick={() => {
-          if (node.children.length > 0) setOpen(!open);
-          onSelect(node);
-        }}
-        style={{
-          cursor: "pointer",
-          padding: "6px 12px",
-          backgroundColor: "#1e1e1e",
-          color: "#fff",
-          borderBottom: "1px solid #333",
-        }}
-      >
-        {node.title}
-      </div>
-      {open &&
-        node.children.map((child, i) => (
-          <RenderMenu
-            key={i}
-            node={child}
-            level={level + 1}
-            onSelect={onSelect}
-          />
-        ))}
-    </div>
-  );
-}
+import React, { useState, useEffect } from "react";
+import { Graph } from "react-d3-graph";
 
 export default function App() {
-  // Construcción del árbol N-ario
-  const root = new MenuNode("Main Menu", "/", "Welcome to the app!");
+  const [data, setData] = useState({
+    nodes: [
+      { id: "Bogotá", type: "city", color: "#2196f3" },
+      { id: "Medellín", type: "city", color: "#2196f3" },
+      { id: "Cali", type: "city", color: "#2196f3" },
+      { id: "Ana (25)", type: "person", city: "Bogotá", color: "#4caf50" },
+      { id: "Luis (30)", type: "person", city: "Medellín", color: "#4caf50" },
+      { id: "Carla (22)", type: "person", city: "Bogotá", color: "#4caf50" },
+      { id: "Mateo (28)", type: "person", city: "Cali", color: "#4caf50" },
+    ],
+    links: [
+      { source: "Ana (25)", target: "Bogotá" },
+      { source: "Carla (22)", target: "Bogotá" },
+      { source: "Luis (30)", target: "Medellín" },
+      { source: "Mateo (28)", target: "Cali" },
+      { source: "Ana (25)", target: "Luis (30)" },
+      { source: "Carla (22)", target: "Mateo (28)" },
+    ],
+  });
 
-  const messages = new MenuNode("Messages", "/messages", "📩 Messages section");
-  const settings = new MenuNode("Settings", "/settings", "⚙️ Settings section");
-  const help = new MenuNode("Help", "/help", "💡 Help and documentation");
+  const [selectedCity, setSelectedCity] = useState("");
+  const [peopleInCity, setPeopleInCity] = useState([]);
 
-  const account = new MenuNode("Account", "/settings/account", "👤 Account details");
-  const privacy = new MenuNode("Security & Privacy", "/settings/privacy", "🔒 Privacy settings");
-  const notification = new MenuNode("Notification", "/settings/notification", "🔔 Notification settings");
+  const myConfig = {
+    nodeHighlightBehavior: true,
+    height: 600,
+    width: 800,
+    directed: false,
+    node: {
+      size: 500,
+      highlightStrokeColor: "black",
+      labelProperty: "id",
+      fontSize: 12,
+    },
+    link: {
+      highlightColor: "black",
+    },
+    d3: {
+      gravity: -300,
+      linkLength: 150,
+      alphaTarget: 0.2,
+      disableLinkForce: false,
+    },
+    panAndZoom: true,
+    staticGraph: false, // mantiene movimiento inicial para que se disperse
+  };
 
-  settings.addChild(account);
-  settings.addChild(privacy);
-  settings.addChild(notification);
+  // ✅ Este truco forza el re-render para que el grafo se estabilice siempre
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setData((prev) => ({ ...prev }));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const faq = new MenuNode("FAQ", "/help/faq", "❓ Frequently Asked Questions");
-  const contact = new MenuNode("Contact Support", "/help/contact", "📞 Contact support");
-  help.addChild(faq);
-  help.addChild(contact);
+  const handleCityClick = (cityName) => {
+    const people = data.nodes.filter(
+      (node) => node.type === "person" && node.city === cityName
+    );
+    setSelectedCity(cityName);
+    setPeopleInCity(people);
+  };
 
-  root.addChild(messages);
-  root.addChild(settings);
-  root.addChild(help);
-
-  const [selectedNode, setSelectedNode] = useState(root);
+  const onClickNode = (nodeId) => {
+    const node = data.nodes.find((n) => n.id === nodeId);
+    if (node && node.type === "city") {
+      handleCityClick(node.id);
+    }
+  };
 
   return (
-    <div style={{ display: "flex", height: "100vh", backgroundColor: "#121212" }}>
-      {/* Sidebar */}
-      <div
-        style={{
-          width: "250px",
-          backgroundColor: "#1e1e1e",
-          color: "white",
-          overflowY: "auto",
-        }}
-      >
-        {root.children.map((child, i) => (
-          <RenderMenu key={i} node={child} onSelect={setSelectedNode} />
-        ))}
+    <div style={{ textAlign: "center", background: "#ccc", color: "#000", height: "100vh", width: "100vw", paddingTop: "20px" }}>
+      <h2>Challenge 16: Graph of Friends and Cities</h2>
+
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <Graph id="graph" data={data} config={myConfig} onClickNode={onClickNode} />
       </div>
 
-      {/* Contenido */}
-      <div
-        style={{
-          flex: 1,
-          color: "white",
-          padding: "40px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "1.5rem",
-        }}
-      >
-        <div>
-          <h2>{selectedNode.title}</h2>
-          <p style={{ marginTop: "10px" }}>{selectedNode.component}</p>
-          <p style={{ marginTop: "10px", fontSize: "0.9rem", color: "#aaa" }}>
-            Link: {selectedNode.link}
-          </p>
-        </div>
+      <div style={{ marginTop: "20px" }}>
+        <h3>
+          {selectedCity
+            ? `People living in ${selectedCity}:`
+            : "Click on a city node to see its residents"}
+        </h3>
+        {peopleInCity.length > 0 ? (
+          <ul style={{ listStyle: "none", padding: 0 }}>
+            {peopleInCity.map((p) => (
+              <li key={p.id}>{p.id}</li>
+            ))}
+          </ul>
+        ) : (
+          selectedCity && <p>No people found in this city.</p>
+        )}
       </div>
     </div>
   );
